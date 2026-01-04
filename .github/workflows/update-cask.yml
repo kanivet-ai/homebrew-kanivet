@@ -1,0 +1,91 @@
+name: Update Cask on New Release
+
+on:
+  repository_dispatch:
+    types: [new-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update to (e.g., 0.9.1)'
+        required: true
+
+jobs:
+  update-cask:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(curl -s "https://kanivet-releases.s3.eu-west-1.amazonaws.com/latest-mac.yml" | grep "^version:" | cut -d' ' -f2)
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download and calculate SHA256
+        id: sha
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          ARM_SHA=$(curl -sL "https://kanivet-releases.s3.eu-west-1.amazonaws.com/kanivet-${VERSION}-arm64-mac.dmg" | shasum -a 256 | cut -d' ' -f1)
+          X64_SHA=$(curl -sL "https://kanivet-releases.s3.eu-west-1.amazonaws.com/kanivet-${VERSION}-x64-mac.dmg" | shasum -a 256 | cut -d' ' -f1)
+          
+          echo "arm_sha=$ARM_SHA" >> $GITHUB_OUTPUT
+          echo "x64_sha=$X64_SHA" >> $GITHUB_OUTPUT
+
+      - name: Update Cask
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARM_SHA="${{ steps.sha.outputs.arm_sha }}"
+          X64_SHA="${{ steps.sha.outputs.x64_sha }}"
+          
+          cat > Casks/kanivet.rb << 'CASKEOF'
+          cask "kanivet" do
+            arch arm: "arm64", intel: "x64"
+
+            version "VERSION_PLACEHOLDER"
+            sha256 arm:   "ARM_SHA_PLACEHOLDER",
+                   intel: "X64_SHA_PLACEHOLDER"
+
+            url "https://kanivet-releases.s3.eu-west-1.amazonaws.com/kanivet-#{version}-#{arch}-mac.dmg"
+            name "Kanivet"
+            desc "Kubernetes cluster navigation and troubleshooting"
+            homepage "https://kanivet.io"
+
+            livecheck do
+              url "https://kanivet-releases.s3.eu-west-1.amazonaws.com/latest-mac.yml"
+              strategy :electron_builder
+            end
+
+            auto_updates true
+            depends_on macos: ">= :monterey"
+
+            app "kanivet.app"
+
+            zap trash: [
+              "~/Library/Application Support/kanivet",
+              "~/Library/Caches/com.kanivet.app",
+              "~/Library/Caches/com.kanivet.app.ShipIt",
+              "~/Library/HTTPStorages/com.kanivet.app",
+              "~/Library/Logs/kanivet",
+              "~/Library/Preferences/com.kanivet.app.plist",
+              "~/Library/Saved Application State/com.kanivet.app.savedState",
+            ]
+          end
+          CASKEOF
+          
+          sed -i '' "s/VERSION_PLACEHOLDER/$VERSION/" Casks/kanivet.rb
+          sed -i '' "s/ARM_SHA_PLACEHOLDER/$ARM_SHA/" Casks/kanivet.rb
+          sed -i '' "s/X64_SHA_PLACEHOLDER/$X64_SHA/" Casks/kanivet.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/kanivet.rb
+          git commit -m "chore: update kanivet to ${{ steps.version.outputs.version }}" || exit 0
+          git push
+
