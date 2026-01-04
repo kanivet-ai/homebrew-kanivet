@@ -1,11 +1,12 @@
 cask "kanivet" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.9.1"
-  sha256 arm:   "a4c84bc52f9c028deef2612911eb824c70e2f3a528e383c909623744843352c9",
-         intel: "6eee51d80ff55f41497cb4bf1236a26641a888d1d6238436ea2e8a73d385d19c"
+  version "0.10.0"
+  sha256 arm:   "3058ce802c930fbb991cf2432ea99f741cd24591ef7e90c3962ca38eff2e72e7",
+         intel: "3284523e7bd78e09334c25c8de1c97a6f6758879c1db7c91e766db78afbb0355"
 
-  url "https://kanivet-releases.s3.eu-west-1.amazonaws.com/kanivet-#{version}-#{arch}-mac.dmg"
+  url "https://kanivet-releases.s3.eu-west-1.amazonaws.com/kanivet-#{version}-#{arch}-mac.dmg",
+      verified: "kanivet-releases.s3.eu-west-1.amazonaws.com/"
   name "Kanivet"
   desc "Kubernetes cluster navigation and troubleshooting"
   homepage "https://kanivet.io/"
