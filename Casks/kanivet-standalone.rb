@@ -1,5 +1,6 @@
 cask "kanivet-standalone" do
-  arch arm: "arm64", intel: "x64"
+  # TODO: add arm64 builds when available
+  # arch arm: "arm64", intel: "x64"
 
   version "0.1.0"
   sha256 :no_check
@@ -9,6 +10,9 @@ cask "kanivet-standalone" do
   desc "Kubernetes IDE - standalone version (no account required)"
   homepage "https://kanivet.io"
 
+  # x64 binary runs on Apple Silicon via Rosetta
+  depends_on arch: :x86_64
+
   preflight do
     require "json"
     require "net/http"
@@ -16,7 +20,7 @@ cask "kanivet-standalone" do
 
     harbor = "harbor.cluster.nmworks.xyz"
     repo = "kanivet/standalone"
-    tag = "v#{version}-#{arch}"
+    tag = "v#{version}-x64"
 
     # Get anonymous pull token
     token_uri = URI("https://#{harbor}/service/token?service=harbor-registry&scope=repository:#{repo}:pull")
@@ -52,7 +56,7 @@ cask "kanivet-standalone" do
       print_stderr: true
   end
 
-  installer manual: "Kanivet-standalone-#{version}-#{arch}.dmg"
+  installer manual: "Kanivet-standalone-#{version}-x64.dmg"
 
   uninstall quit: "com.kanivet.app"
 
