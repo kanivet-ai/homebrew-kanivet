@@ -10,8 +10,7 @@ cask "kanivet-standalone" do
   desc "Kubernetes IDE - standalone version (no account required)"
   homepage "https://kanivet.io"
 
-  # x64 binary runs on Apple Silicon via Rosetta
-  depends_on arch: :x86_64
+  # x64 binary runs on Apple Silicon via Rosetta (no native arm64 build yet)
 
   preflight do
     require "json"
