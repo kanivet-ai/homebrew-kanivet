@@ -9,11 +9,16 @@ on:
         description: 'Version to update to (e.g., 0.9.1)'
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   update-cask:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get version
         id: version
