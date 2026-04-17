@@ -18,7 +18,7 @@ cask "kanivet" do
   auto_updates true
   depends_on macos: ">= :monterey"
 
-  app "kanivet.app"
+  app "kanivet-standalone.app"
 
   zap trash: [
     "~/Library/Application Support/kanivet",
