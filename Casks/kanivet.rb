@@ -5,11 +5,10 @@ cask "kanivet" do
   sha256 arm:   "71646721401a7ba7de9e5b3aa45cac2cecc38821266490a5192ae3096e7118a7",
          intel: "926f1c789908defaa346ed673852ad4bef07232bfc30b28454ebb0c4dc0cac4a"
 
-  url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg",
-      verified: "releases.kanivet.io/"
+  url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
   desc "Kubernetes cluster navigation and troubleshooting"
-  homepage "https://kanivet.io/"
+  homepage "https://kanivet.io"
 
   livecheck do
     url "https://releases.kanivet.io/latest-mac.yml"
