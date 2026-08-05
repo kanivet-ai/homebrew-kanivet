@@ -1,9 +1,9 @@
 cask "kanivet" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.35.3"
-  sha256 arm:   "7beea98588a1f8c742520cb36dccb0b9a6074e9a50b608165ee9fda2e8dc2269",
-         intel: "a2bfd3544a51896526f4b04ac90e0350e26a9ceef1172a3a8cafeb698deed317"
+  version "0.35.4"
+  sha256 arm:   "bee4d17b07b0d1a7fc3a6cf497a04a9c433cdecfa976ff005f1a551db3f1621b",
+         intel: "8648691be7c1cb52ab2c2f12a45c4c88f73474bff1500660d8f6324aa4866587"
 
   url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
