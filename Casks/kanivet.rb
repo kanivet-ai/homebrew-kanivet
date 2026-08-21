@@ -1,9 +1,9 @@
 cask "kanivet" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.35.5"
-  sha256 arm:   "3518f2e6551b680683076228e161e9ba34a646bf1c645ac09852f9fbd27e24cd",
-         intel: "35e0169ebd8d6c39a2f0025c8786307a8d5c5fa5e4015b48aab2b9277e6348b8"
+  version "0.35.6"
+  sha256 arm:   "2de12e103323acf9812c99f583981e3aa254630cb5ebda8b2ea6e7ae0b284345",
+         intel: "8e632d3d168c9b28ecc47c7efbd59e6f78168103b4ecdd1601dddccec4befb6b"
 
   url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
@@ -16,7 +16,7 @@ cask "kanivet" do
   end
 
   auto_updates true
-  depends_on macos: :monterey
+  depends_on macos: ">= :monterey"
 
   app "kanivet-standalone.app"
 
