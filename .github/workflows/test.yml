@@ -1,0 +1,36 @@
+name: Test tap
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m unittest discover -s tests -v
+      - name: Validate cask syntax and Homebrew DSL
+        run: |
+          ruby -c Casks/kanivet.rb
+          ruby -c Casks/kanivet-standalone.rb
+          ruby -c official-cask-submission/kanivet.rb
+          brew tap --custom-remote kanivet-ai/kanivet "$GITHUB_WORKSPACE"
+          brew info --cask --json=v2 kanivet-ai/kanivet/kanivet
+          brew info --cask --json=v2 kanivet-ai/kanivet/kanivet-standalone
+          brew style --cask kanivet-ai/kanivet/kanivet
+          git diff --check
+      - name: Install and verify OSS package
+        run: |
+          brew install --cask kanivet-ai/kanivet/kanivet
+          test -d /Applications/kanivet.app
+          /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' /Applications/kanivet.app/Contents/Info.plist
+          python3 -c 'from pathlib import Path; text = Path("/Applications/kanivet.app/Contents/Resources/app-update.yml").read_text(); print(text); assert "provider: github" in text and "repo: kanivet-oss" in text'
+          brew uninstall --cask kanivet-ai/kanivet/kanivet

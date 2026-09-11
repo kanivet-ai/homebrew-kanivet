@@ -1,97 +1,49 @@
 name: Update Cask on New Release
 
 on:
+  schedule:
+    - cron: '17 * * * *'
   repository_dispatch:
     types: [new-release]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to update to (e.g., 0.9.1)'
-        required: true
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+concurrency:
+  group: update-cask
+  cancel-in-progress: false
 
 jobs:
   update-cask:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get version
-        id: version
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test updater
+        run: python3 -m unittest discover -s tests -v
+      - name: Sync latest stable OSS release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/update_cask.py
+      - name: Validate casks
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            VERSION=$(curl -s "https://releases.kanivet.io/latest-mac.yml" | grep "^version:" | cut -d' ' -f2)
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          ruby -c Casks/kanivet.rb
+          ruby -c official-cask-submission/kanivet.rb
+          git diff --check
+      - name: Commit and push verified update
+        run: |
+          if git diff --quiet -- Casks/kanivet.rb official-cask-submission/kanivet.rb; then
+            exit 0
           fi
-
-      - name: Download and calculate SHA256
-        id: sha
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          
-          ARM_SHA=$(curl -sL "https://releases.kanivet.io/kanivet-standalone-${VERSION}-arm64-mac.dmg" | shasum -a 256 | cut -d' ' -f1)
-          X64_SHA=$(curl -sL "https://releases.kanivet.io/kanivet-standalone-${VERSION}-x64-mac.dmg" | shasum -a 256 | cut -d' ' -f1)
-          
-          echo "arm_sha=$ARM_SHA" >> $GITHUB_OUTPUT
-          echo "x64_sha=$X64_SHA" >> $GITHUB_OUTPUT
-
-      - name: Update Cask
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          ARM_SHA="${{ steps.sha.outputs.arm_sha }}"
-          X64_SHA="${{ steps.sha.outputs.x64_sha }}"
-          
-          cat > Casks/kanivet.rb << 'CASKEOF'
-          cask "kanivet" do
-            arch arm: "arm64", intel: "x64"
-
-            version "VERSION_PLACEHOLDER"
-            sha256 arm:   "ARM_SHA_PLACEHOLDER",
-                   intel: "X64_SHA_PLACEHOLDER"
-
-            url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
-            name "Kanivet"
-            desc "Kubernetes cluster navigation and troubleshooting"
-            homepage "https://kanivet.io"
-
-            livecheck do
-              url "https://releases.kanivet.io/latest-mac.yml"
-              strategy :electron_builder
-            end
-
-            auto_updates true
-            depends_on macos: ">= :monterey"
-
-            app "kanivet-standalone.app"
-
-            zap trash: [
-              "~/Library/Application Support/kanivet",
-              "~/Library/Caches/com.kanivet.app",
-              "~/Library/Caches/com.kanivet.app.ShipIt",
-              "~/Library/HTTPStorages/com.kanivet.app",
-              "~/Library/Logs/kanivet",
-              "~/Library/Preferences/com.kanivet.app.plist",
-              "~/Library/Saved Application State/com.kanivet.app.savedState",
-            ]
-          end
-          CASKEOF
-          
-          sed -i '' "s/VERSION_PLACEHOLDER/$VERSION/" Casks/kanivet.rb
-          sed -i '' "s/ARM_SHA_PLACEHOLDER/$ARM_SHA/" Casks/kanivet.rb
-          sed -i '' "s/X64_SHA_PLACEHOLDER/$X64_SHA/" Casks/kanivet.rb
-
-      - name: Commit and push
-        run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/kanivet.rb
-          git commit -m "chore: update kanivet to ${{ steps.version.outputs.version }}" || exit 0
-          git push
-
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/kanivet.rb official-cask-submission/kanivet.rb
+          git commit -m "chore: sync latest stable Kanivet OSS release"
+          git push origin HEAD:main

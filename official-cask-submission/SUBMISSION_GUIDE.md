@@ -48,7 +48,7 @@ brew audit --cask --online kanivet
 
 ```bash
 git add Casks/k/kanivet.rb
-git commit -m "Add kanivet 0.9.1"
+git commit -m "Add kanivet <current-version>"
 git push origin add-kanivet
 ```
 
@@ -56,7 +56,7 @@ git push origin add-kanivet
 
 - Go to https://github.com/Homebrew/homebrew-cask/compare
 - Create PR from your fork's `add-kanivet` branch
-- Title: `Add kanivet 0.9.1`
+- Title: `Add kanivet <current-version>`
 - Description template will be provided
 
 ## Updating After Acceptance
