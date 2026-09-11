@@ -1,26 +1,23 @@
-# This file is for submission to homebrew/homebrew-cask
-# Submit via PR to: https://github.com/Homebrew/homebrew-cask
-# File location: Casks/k/kanivet.rb
-
 cask "kanivet" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.9.1"
-  sha256 arm:   "a4c84bc52f9c028deef2612911eb824c70e2f3a528e383c909623744843352c9",
-         intel: "6eee51d80ff55f41497cb4bf1236a26641a888d1d6238436ea2e8a73d385d19c"
+  version "0.1.2"
+  sha256 arm:   "29cbabd108e34edd420859afbfd1e52acee72065e99cf29d9290c8a8475ae1b4",
+         intel: "d64a69f193acb66d31162c5090f6807e007e86fba65b34472b67c9e703a2a3bc"
 
-  url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
+  url "https://github.com/kanivet-ai/kanivet-oss/releases/download/v#{version}/kanivet-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
-  desc "Kubernetes cluster navigation and troubleshooting IDE"
-  homepage "https://kanivet.io/"
+  desc "Kubernetes cluster navigation and troubleshooting"
+  homepage "https://kanivet.io"
 
   livecheck do
-    url "https://releases.kanivet.io/latest-mac.yml"
-    strategy :electron_builder
+    url :url
+    strategy :github_latest
   end
 
   auto_updates true
-  depends_on macos: ">= :monterey"
+  depends_on macos: :monterey
+  conflicts_with cask: "kanivet-standalone"
 
   app "kanivet.app"
 

@@ -1,24 +1,25 @@
 cask "kanivet" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.37.0"
-  sha256 arm:   "0be28f6c3fa7eda00020fa3403bb939a520ea339bc1567d1ebfe7a9bae06b9d0",
-         intel: "6b221113a6872b13de6282362d093f7215a52357b974cabb76af31b76b88ab4e"
+  version "0.1.2"
+  sha256 arm:   "29cbabd108e34edd420859afbfd1e52acee72065e99cf29d9290c8a8475ae1b4",
+         intel: "d64a69f193acb66d31162c5090f6807e007e86fba65b34472b67c9e703a2a3bc"
 
-  url "https://releases.kanivet.io/kanivet-standalone-#{version}-#{arch}-mac.dmg"
+  url "https://github.com/kanivet-ai/kanivet-oss/releases/download/v#{version}/kanivet-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
   desc "Kubernetes cluster navigation and troubleshooting"
   homepage "https://kanivet.io"
 
   livecheck do
-    url "https://releases.kanivet.io/latest-mac.yml"
-    strategy :electron_builder
+    url :url
+    strategy :github_latest
   end
 
   auto_updates true
-  depends_on macos: ">= :monterey"
+  depends_on macos: :monterey
+  conflicts_with cask: "kanivet-standalone"
 
-  app "kanivet-standalone.app"
+  app "kanivet.app"
 
   zap trash: [
     "~/Library/Application Support/kanivet",
