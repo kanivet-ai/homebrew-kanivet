@@ -27,3 +27,10 @@ jobs:
           brew info --cask --json=v2 kanivet-ai/kanivet/kanivet-standalone
           brew style --cask kanivet-ai/kanivet/kanivet
           git diff --check
+      - name: Install and verify OSS package
+        run: |
+          brew install --cask kanivet-ai/kanivet/kanivet
+          test -d /Applications/kanivet.app
+          /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' /Applications/kanivet.app/Contents/Info.plist
+          python3 -c 'from pathlib import Path; text = Path("/Applications/kanivet.app/Contents/Resources/app-update.yml").read_text(); print(text); assert "provider: github" in text and "repo: kanivet-oss" in text'
+          brew uninstall --cask kanivet-ai/kanivet/kanivet

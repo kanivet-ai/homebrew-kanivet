@@ -8,7 +8,7 @@ cask "kanivet" do
   url "https://github.com/kanivet-ai/kanivet-oss/releases/download/v#{version}/kanivet-#{version}-#{arch}-mac.dmg"
   name "Kanivet"
   desc "Kubernetes cluster navigation and troubleshooting"
-  homepage "https://kanivet.io"
+  homepage "https://kanivet.io/"
 
   livecheck do
     url :url
@@ -16,8 +16,8 @@ cask "kanivet" do
   end
 
   auto_updates true
-  depends_on macos: :monterey
   conflicts_with cask: "kanivet-standalone"
+  depends_on macos: :monterey
 
   app "kanivet.app"
 
